@@ -1,0 +1,2 @@
+# lottery
+A Sponge plugin
