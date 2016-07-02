@@ -20,21 +20,22 @@ class BuyTicketCommand : PlayerCommandExecutor() {
         val ticketCosts = config.ticketCosts * amount
         val finalBoughtTickets = boughtTickets + amount
 
-        val economyService = Lottery.getEconomyServiceOrFail()
-        val transactionResult = economyService.getOrCreateAccount(player.uniqueId).get()
-                .withdraw(economyService.defaultCurrency, BigDecimal(ticketCosts), Lottery.PLUGIN_CAUSE)
-        if (!transactionResult.result.equals(ResultType.SUCCESS)) {
-            player.sendMessage(Text.of(TextColors.RED, "Transaction failed!"))
-            return CommandResult.success()
-        }
-
-        val newConfig = if (player.hasPermission("lottery.tickets.buy.$finalBoughtTickets")) {
+        val newConfig = if (config.maxTickets >= finalBoughtTickets) {
             config.copy(internalData = config.internalData.copy(
                     boughtTickets = config.internalData.boughtTickets + (player.uniqueId to finalBoughtTickets),
                     pot = config.internalData.pot + amount * config.ticketCosts))
         } else {
-            throw CommandException(Text.of("You can't buy that many tickets!"))
+            throw CommandException(Text.of("Maximum tickets per player reached! " +
+                    "You can buy ${config.maxTickets - config.internalData.boughtTickets[player.uniqueId]!!} tickets!"))
         }
+
+        val economyService = Lottery.getEconomyServiceOrFail()
+        val transactionResult = economyService.getOrCreateAccount(player.uniqueId).get()
+                .withdraw(economyService.defaultCurrency, BigDecimal(ticketCosts), Lottery.PLUGIN_CAUSE)
+        if (!transactionResult.result.equals(ResultType.SUCCESS)) {
+            throw CommandException(Text.of("Transaction failed!"))
+        }
+
         ConfigManager.saveConfig(newConfig)
 
         player.sendMessage(Text.of(TextColors.GRAY,

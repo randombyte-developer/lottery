@@ -36,13 +36,14 @@ data class Config(
         @Setting(comment = "Format explanation: http://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java.lang.CharSequence-")
             val drawInterval: Duration = Duration.ofHours(3),
         @Setting val ticketCosts: Int = 100,
-        @Setting(comment = "How much of the pot should be given to the winner.") val payoutPercentage: Int = 90,
+        @Setting(comment = "How much of the pot should be given to the winner") val payoutPercentage: Int = 90,
         @Setting val drawMessage: TextTemplate = TextTemplate.of(
                 TextTemplate.arg("player").color(TextColors.GOLD),
                 Text.of(TextColors.GRAY, " won the lottery pot of "),
                 TextTemplate.arg("pot").color(TextColors.AQUA),
                 Text.of(TextColors.GRAY, "$!")
         ),
+        @Setting(comment = "The max. amount of tickets a player can buy") val maxTickets: Int = 5,
         @Setting(comment = "Don't modify this!") val internalData: InternalData = InternalData()
 )
 
