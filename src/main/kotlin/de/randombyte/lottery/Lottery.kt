@@ -69,10 +69,12 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
 
         Sponge.getCommandManager().register(this, CommandSpec.builder()
                 .child(CommandSpec.builder()
+                        .permission("lottery.ticket.buy")
                         .executor(BuyTicketCommand())
                         .arguments(GenericArguments.optional(GenericArguments.integer(Text.of("ticketAmount"))))
                         .build(), "buy")
                 .child(CommandSpec.builder()
+                        .permission("lottery.draw")
                         .executor(DrawCommand())
                         .build(), "draw")
                 .child(CommandSpec.builder()
