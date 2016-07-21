@@ -44,7 +44,9 @@ data class Config(
                 Text.of(TextColors.GRAY, "$!")
         ),
         @Setting(comment = "The max. amount of tickets a player can buy") val maxTickets: Int = 5,
-        @Setting(comment = "Don't modify this!") val internalData: InternalData = InternalData()
+        @Setting(comment = "Don't modify this!") val internalData: InternalData = InternalData(),
+        @Setting(comment = "Broadcasts  how to buy tickets when someone bought one")
+            val broadcastTicketPurchase: Boolean = false
 )
 
 @ConfigSerializable

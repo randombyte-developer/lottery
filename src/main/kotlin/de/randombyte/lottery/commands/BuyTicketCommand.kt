@@ -2,12 +2,14 @@ package de.randombyte.lottery.commands
 
 import de.randombyte.lottery.ConfigManager
 import de.randombyte.lottery.Lottery
+import org.spongepowered.api.Sponge
 import org.spongepowered.api.command.CommandException
 import org.spongepowered.api.command.CommandResult
 import org.spongepowered.api.command.args.CommandContext
 import org.spongepowered.api.entity.living.player.Player
 import org.spongepowered.api.service.economy.transaction.ResultType
 import org.spongepowered.api.text.Text
+import org.spongepowered.api.text.action.TextActions
 import org.spongepowered.api.text.format.TextColors
 import java.math.BigDecimal
 
@@ -40,6 +42,14 @@ class BuyTicketCommand : PlayerCommandExecutor() {
 
         player.sendMessage(Text.of(TextColors.GRAY,
                 "You bought $amount tickets(s) and now have a total amount of $finalBoughtTickets tickets(s)!"))
+
+        if (ConfigManager.loadConfig().broadcastTicketPurchase) {
+            Sponge.getServer().broadcastChannel.send(Text.builder()
+                    .append(Text.of(TextColors.GOLD, "${player.name} has bought $amount ticket(s)! "))
+                    .append(Text.builder("/lottery info").color(TextColors.AQUA).
+                            onClick(TextActions.suggestCommand("/lottery info")).build())
+                    .build())
+        }
 
         return CommandResult.success()
     }

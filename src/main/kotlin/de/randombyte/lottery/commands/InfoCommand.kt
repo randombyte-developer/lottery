@@ -14,7 +14,7 @@ class InfoCommand : PlayerCommandExecutor() {
         player.sendMessage(Text.of(
                 TextColors.GRAY,
                 "You currently have ${config.internalData.boughtTickets[player.uniqueId] ?: 0} tickets(s) " +
-                        "and there are ${Lottery.getPot(config)}$ in the pot, the draw is in "))
+                        "and there are ${Lottery.getPot(config)}$ in the pot. Buy a ticket with /lottery buy!"))
         return CommandResult.success()
     }
 }

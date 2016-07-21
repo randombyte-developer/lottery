@@ -33,7 +33,7 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
         const val VERSION = "v0.1.1"
         const val AUTHOR = "RandomByte"
 
-        val PLUGIN_CAUSE = Cause.of(NamedCause.source(this))
+        val PLUGIN_CAUSE: Cause = Cause.of(NamedCause.source(this))
 
         fun draw(config: Config) {
             val ticketBuyers = config.internalData.boughtTickets.map { Collections.nCopies(it.value, it.key) }.flatten()
@@ -59,7 +59,7 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
                 ConfigManager.saveConfig(config.copy(internalData = config.internalData.copy(pot = 0, boughtTickets = emptyMap())))
         fun getPot(config: Config) = config.internalData.pot * (config.payoutPercentage / 100.0)
 
-        fun getEconomyServiceOrFail() = Sponge.getServiceManager().provide(EconomyService::class.java)
+        fun getEconomyServiceOrFail(): EconomyService = Sponge.getServiceManager().provide(EconomyService::class.java)
                 .orElseThrow { RuntimeException("No economy plugin loaded!") }
     }
 
