@@ -58,7 +58,7 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
             economyService.getOrCreateAccount(uuid).get().deposit(economyService.defaultCurrency, BigDecimal(pot), PLUGIN_CAUSE)
         }
 
-        private fun broadcast(text: Text) = Sponge.getServer().broadcastChannel.send(text)
+        fun broadcast(text: Text) = Sponge.getServer().broadcastChannel.send(text)
         private fun resetPot(config: Config) =
                 ConfigManager.saveConfig(config.copy(internalData = config.internalData.copy(pot = 0, boughtTickets = emptyMap())))
         fun getPot(config: Config) = config.internalData.pot * (config.payoutPercentage / 100.0)

@@ -2,7 +2,6 @@ package de.randombyte.lottery.commands
 
 import de.randombyte.lottery.ConfigManager
 import de.randombyte.lottery.Lottery
-import org.spongepowered.api.Sponge
 import org.spongepowered.api.command.CommandException
 import org.spongepowered.api.command.CommandResult
 import org.spongepowered.api.command.args.CommandContext
@@ -44,7 +43,7 @@ class BuyTicketCommand : PlayerCommandExecutor() {
                 "You bought $amount tickets(s) and now have a total amount of $finalBoughtTickets tickets(s)!"))
 
         if (ConfigManager.loadConfig().broadcastTicketPurchase) {
-            Sponge.getServer().broadcastChannel.send(Text.builder()
+            Lottery.broadcast(Text.builder()
                     .append(Text.of(TextColors.GOLD, "${player.name} has bought $amount ticket(s)! "))
                     .append(Text.builder("/lottery info").color(TextColors.AQUA).
                             onClick(TextActions.suggestCommand("/lottery info")).build())
