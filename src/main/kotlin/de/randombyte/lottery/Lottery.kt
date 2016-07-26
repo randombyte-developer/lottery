@@ -32,7 +32,7 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
     companion object {
         const val ID = "lottery"
         const val NAME = "Lottery"
-        const val VERSION = "v0.1.2"
+        const val VERSION = "v0.2"
         const val AUTHOR = "RandomByte"
 
         val PLUGIN_CAUSE = Cause.of(NamedCause.source(this))!!
