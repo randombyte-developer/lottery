@@ -39,8 +39,11 @@ class BuyTicketCommand : PlayerCommandExecutor() {
 
         ConfigManager.saveConfig(newConfig)
 
-        player.sendMessage(Text.of(TextColors.GRAY,
-                "You bought $amount tickets(s) and now have a total amount of $finalBoughtTickets tickets(s)!"))
+        player.sendMessage(Text.builder()
+                .append(Text.of(TextColors.GRAY, "You bought $amount tickets(s) and now have a total amount of "))
+                .append(Text.of(TextColors.AQUA, "$finalBoughtTickets tickets(s)!"))
+                .build()
+        )
 
         if (ConfigManager.loadConfig().broadcastTicketPurchase) {
             Lottery.broadcast(Text.builder()
