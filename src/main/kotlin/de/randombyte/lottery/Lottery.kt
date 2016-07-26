@@ -35,7 +35,7 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
         const val VERSION = "v0.1.2"
         const val AUTHOR = "RandomByte"
 
-        val PLUGIN_CAUSE: Cause = Cause.of(NamedCause.source(this))
+        val PLUGIN_CAUSE = Cause.of(NamedCause.source(this))!!
         // Set on startup in resetTask()
         private lateinit var nextDraw: Instant
 
