@@ -22,6 +22,8 @@ import org.spongepowered.api.service.user.UserStorageService
 import org.spongepowered.api.text.Text
 import org.spongepowered.api.text.format.TextColors
 import java.math.BigDecimal
+import java.time.Duration
+import java.time.Instant
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -34,6 +36,8 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
         const val AUTHOR = "RandomByte"
 
         val PLUGIN_CAUSE: Cause = Cause.of(NamedCause.source(this))
+        // Set on startup in resetTask()
+        private lateinit var nextDraw: Instant
 
         fun draw(config: Config) {
             val ticketBuyers = config.internalData.boughtTickets.map { Collections.nCopies(it.value, it.key) }.flatten()
@@ -58,6 +62,7 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
         private fun resetPot(config: Config) =
                 ConfigManager.saveConfig(config.copy(internalData = config.internalData.copy(pot = 0, boughtTickets = emptyMap())))
         fun getPot(config: Config) = config.internalData.pot * (config.payoutPercentage / 100.0)
+        fun getDurationUntilDraw() = Duration.between(Instant.now(), Lottery.nextDraw)!!
 
         fun getEconomyServiceOrFail(): EconomyService = Sponge.getServiceManager().provide(EconomyService::class.java)
                 .orElseThrow { RuntimeException("No economy plugin loaded!") }
@@ -91,7 +96,7 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
     fun onReload(event: GameReloadEvent) {
         val config = ConfigManager.loadConfig()
         resetTask(config)
-        logger.info("Reloaded! Next draw in ${config.drawInterval.toString()}!")
+        logger.info("Reloaded! Next draw in ${getDurationUntilDraw().toMinutes()}!")
     }
 
     private fun resetTask(config: Config) {
@@ -102,5 +107,6 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
                 .delay(config.drawInterval.seconds, TimeUnit.SECONDS)
                 .execute { -> draw(ConfigManager.loadConfig()) }
                 .submit(this)
+        nextDraw = Instant.ofEpochSecond(Instant.now().epochSecond + config.drawInterval.seconds)
     }
 }
