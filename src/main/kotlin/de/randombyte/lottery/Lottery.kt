@@ -35,7 +35,7 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
         const val VERSION = "v0.2"
         const val AUTHOR = "RandomByte"
 
-        val PLUGIN_CAUSE = Cause.of(NamedCause.source(this))!!
+        val PLUGIN_CAUSE = Cause.of(NamedCause.source(this))
         // Set on startup in resetTask()
         private lateinit var nextDraw: Instant
 
@@ -62,7 +62,7 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
         private fun resetPot(config: Config) =
                 ConfigManager.saveConfig(config.copy(internalData = config.internalData.copy(pot = 0, boughtTickets = emptyMap())))
         fun getPot(config: Config) = config.internalData.pot * (config.payoutPercentage / 100.0)
-        fun getDurationUntilDraw() = Duration.between(Instant.now(), Lottery.nextDraw)!!
+        fun getDurationUntilDraw() = Duration.between(Instant.now(), Lottery.nextDraw)
 
         fun getEconomyServiceOrFail(): EconomyService = Sponge.getServiceManager().provide(EconomyService::class.java)
                 .orElseThrow { RuntimeException("No economy plugin loaded!") }
