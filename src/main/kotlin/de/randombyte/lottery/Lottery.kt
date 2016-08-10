@@ -32,7 +32,7 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
     companion object {
         const val ID = "lottery"
         const val NAME = "Lottery"
-        const val VERSION = "v0.2"
+        const val VERSION = "v0.2.1"
         const val AUTHOR = "RandomByte"
 
         val PLUGIN_CAUSE = Cause.of(NamedCause.source(this))
@@ -104,9 +104,10 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
         Sponge.getScheduler().createTaskBuilder()
                 .async()
                 .interval(config.drawInterval.seconds, TimeUnit.SECONDS)
-                .delay(config.drawInterval.seconds, TimeUnit.SECONDS)
-                .execute { -> draw(ConfigManager.loadConfig()) }
+                .execute { ->
+                    draw(ConfigManager.loadConfig())
+                    nextDraw = Instant.ofEpochSecond(Instant.now().epochSecond + config.drawInterval.seconds)
+                }
                 .submit(this)
-        nextDraw = Instant.ofEpochSecond(Instant.now().epochSecond + config.drawInterval.seconds)
     }
 }
