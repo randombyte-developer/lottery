@@ -45,12 +45,19 @@ data class Config(
         ),
         @Setting(comment = "The max. amount of tickets a player can buy") val maxTickets: Int = 5,
         @Setting(comment = "Don't modify this!") val internalData: InternalData = InternalData(),
-        @Setting(comment = "Broadcasts  how to buy tickets when someone bought one")
-            val broadcastTicketPurchase: Boolean = false
+        @Setting val broadcasts: Broadcasts = Broadcasts()
 )
 
 @ConfigSerializable
 data class InternalData(
         @Setting val boughtTickets: Map<UUID, Int> = emptyMap(),
         @Setting val pot: Int = 0
+)
+
+@ConfigSerializable
+data class Broadcasts(
+        @Setting(comment = "Broadcasts how to buy tickets when someone bought one")
+            val broadcastTicketPurchase: Boolean = false,
+        @Setting(comment = "Broadcasts in set interval how much is in the pot; set to PT0M to disable")
+            val timedBroadcastInterval: Duration = Duration.ofMinutes(30)
 )

@@ -45,7 +45,7 @@ class BuyTicketCommand : PlayerCommandExecutor() {
                 .build()
         )
 
-        if (ConfigManager.loadConfig().broadcastTicketPurchase) {
+        if (ConfigManager.loadConfig().broadcasts.broadcastTicketPurchase) {
             Lottery.broadcast(Text.builder()
                     .append(Text.of(TextColors.GOLD, "${player.name} has bought $amount ticket(s)! "))
                     .append(Text.builder("/lottery info").color(TextColors.AQUA).

@@ -17,9 +17,11 @@ import org.spongepowered.api.event.cause.NamedCause
 import org.spongepowered.api.event.game.GameReloadEvent
 import org.spongepowered.api.event.game.state.GameInitializationEvent
 import org.spongepowered.api.plugin.Plugin
+import org.spongepowered.api.scheduler.Task
 import org.spongepowered.api.service.economy.EconomyService
 import org.spongepowered.api.service.user.UserStorageService
 import org.spongepowered.api.text.Text
+import org.spongepowered.api.text.action.TextActions
 import org.spongepowered.api.text.format.TextColors
 import java.math.BigDecimal
 import java.time.Duration
@@ -32,11 +34,11 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
     companion object {
         const val ID = "lottery"
         const val NAME = "Lottery"
-        const val VERSION = "v0.2.1"
+        const val VERSION = "v0.2.2"
         const val AUTHOR = "RandomByte"
 
         val PLUGIN_CAUSE = Cause.of(NamedCause.source(this))
-        // Set on startup in resetTask()
+        // Set on startup in resetTasks()
         private lateinit var nextDraw: Instant
 
         fun draw(config: Config) {
@@ -45,13 +47,14 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
                 broadcast(Text.of(TextColors.GRAY, "The lottery pot is empty, the draw is postponed!"))
                 return
             }
-            Collections.shuffle(ticketBuyers) //Here comes the randomness
+            Collections.shuffle(ticketBuyers) // Here comes the randomness
             playerWon(config, ticketBuyers.first())
             resetPot(config)
         }
 
         private fun playerWon(config: Config, uuid: UUID) {
-            val playerName = Sponge.getServiceManager().provide(UserStorageService::class.java).get().get(uuid).get().name
+            val playerName = Sponge.getServiceManager().provide(UserStorageService::class.java)
+                    .orElse(null)?.get(uuid)?.orElse(null)?.name ?: "unknown"
             val pot = getPot(config)
             broadcast(config.drawMessage.apply(mapOf("player" to playerName, "pot" to pot)).build())
             val economyService = getEconomyServiceOrFail()
@@ -87,7 +90,7 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
                         .build(), "info")
                 .build(), "lottery")
 
-        resetTask(ConfigManager.loadConfig())
+        resetTasks(ConfigManager.loadConfig())
 
         logger.info("$NAME loaded: $VERSION")
     }
@@ -95,19 +98,36 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
     @Listener
     fun onReload(event: GameReloadEvent) {
         val config = ConfigManager.loadConfig()
-        resetTask(config)
+        resetTasks(config)
         logger.info("Reloaded! Next draw in ${getDurationUntilDraw().toMinutes()}!")
     }
 
-    private fun resetTask(config: Config) {
+    private fun resetTasks(config: Config) {
         Sponge.getScheduler().getScheduledTasks(this).forEach { it.cancel() }
-        Sponge.getScheduler().createTaskBuilder()
+        Task.builder()
                 .async()
                 .interval(config.drawInterval.seconds, TimeUnit.SECONDS)
                 .execute { ->
-                    draw(ConfigManager.loadConfig())
-                    nextDraw = Instant.ofEpochSecond(Instant.now().epochSecond + config.drawInterval.seconds)
+                    val currentConfig = ConfigManager.loadConfig()
+                    draw(currentConfig)
+                    nextDraw = Instant.ofEpochSecond(Instant.now().epochSecond + currentConfig.drawInterval.seconds)
                 }
                 .submit(this)
+        Task.builder()
+                .async()
+                .interval(config.broadcasts.timedBroadcastInterval.seconds, TimeUnit.SECONDS)
+                .execute { ->
+                    broadcast(Text.builder()
+                            .append(Text.of(TextColors.GOLD, "Current pot is at "))
+                            .append(Text.of(TextColors.AQUA, getPot(ConfigManager.loadConfig())))
+                            .append(getEconomyServiceOrFail().defaultCurrency.symbol)
+                            .append(Text.of(TextColors.GOLD, "! Use "))
+                            .append(Text.builder("/lottery buy [amount] ").color(TextColors.AQUA).
+                                    onClick(TextActions.suggestCommand("/lottery buy")).build())
+                            .append(Text.of(TextColors.GOLD, "to buy tickets!"))
+                            .build())
+                }
+                .submit(this)
+
     }
 }
