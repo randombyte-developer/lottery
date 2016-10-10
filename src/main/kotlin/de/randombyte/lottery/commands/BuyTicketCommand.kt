@@ -34,7 +34,7 @@ class BuyTicketCommand : PlayerCommandExecutor() {
         val economyService = Lottery.getEconomyServiceOrFail()
         val transactionResult = economyService.getOrCreateAccount(player.uniqueId).get()
                 .withdraw(economyService.defaultCurrency, BigDecimal(ticketCosts), Lottery.PLUGIN_CAUSE)
-        if (!transactionResult.result.equals(ResultType.SUCCESS)) {
+        if (transactionResult.result != ResultType.SUCCESS) {
             throw CommandException(Text.of("Transaction failed!"))
         }
 
