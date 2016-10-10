@@ -18,6 +18,7 @@ class BuyTicketCommand : PlayerCommandExecutor() {
 
         val boughtTickets = config.internalData.boughtTickets[player.uniqueId] ?: 0
         val amount = args.getOne<Int>("ticketAmount").orElse(1)
+        if (amount < 1) throw CommandException(Text.of(TextColors.RED, "'ticketAmount' must be positive!"))
         val ticketCosts = config.ticketCosts * amount
         val finalBoughtTickets = boughtTickets + amount
 
