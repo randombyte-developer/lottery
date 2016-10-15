@@ -13,7 +13,7 @@ class InfoCommand : PlayerCommandExecutor() {
         val config = ConfigManager.loadConfig()
         player.sendMessage(Text.builder()
                 .append(Text.of(TextColors.GRAY, "You currently have "))
-                .append(Text.of(TextColors.AQUA, "${config.internalData.boughtTickets[player.uniqueId] ?: 0} tickets(s) "))
+                .append(Text.of(TextColors.AQUA, "${config.internalData.getBoughtTickets(player)} tickets(s) "))
                 .append(Text.of(TextColors.GRAY, "and there are "))
                 .append(Text.of(TextColors.AQUA, Lottery.getPot(config)))
                 .append(Lottery.getEconomyServiceOrFail().defaultCurrency.symbol)

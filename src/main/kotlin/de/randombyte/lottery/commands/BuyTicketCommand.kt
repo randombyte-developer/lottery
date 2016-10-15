@@ -16,7 +16,9 @@ class BuyTicketCommand : PlayerCommandExecutor() {
     override fun executedByPlayer(player: Player, args: CommandContext): CommandResult {
         val config = ConfigManager.loadConfig()
 
-        val boughtTickets = config.internalData.boughtTickets[player.uniqueId] ?: 0
+
+
+        val boughtTickets = config.internalData.getBoughtTickets(player)
         val amount = args.getOne<Int>("ticketAmount").orElse(1)
         if (amount < 1) throw CommandException(Text.of(TextColors.RED, "'ticketAmount' must be positive!"))
         val ticketCosts = config.ticketCosts * amount
@@ -28,7 +30,7 @@ class BuyTicketCommand : PlayerCommandExecutor() {
                     pot = config.internalData.pot + amount * config.ticketCosts))
         } else {
             throw CommandException(Text.of("Maximum tickets per player reached! " +
-                    "You can buy ${config.maxTickets - config.internalData.boughtTickets[player.uniqueId]!!} tickets!"))
+                    "You can only buy ${config.maxTickets - boughtTickets} more ticket(s)!"))
         }
 
         val economyService = Lottery.getEconomyServiceOrFail()

@@ -7,6 +7,7 @@ import ninja.leaping.configurate.loader.ConfigurationLoader
 import ninja.leaping.configurate.objectmapping.Setting
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers
+import org.spongepowered.api.entity.living.player.Player
 import org.spongepowered.api.text.Text
 import org.spongepowered.api.text.TextTemplate
 import org.spongepowered.api.text.format.TextColors
@@ -52,7 +53,9 @@ data class Config(
 data class InternalData(
         @Setting val boughtTickets: Map<UUID, Int> = emptyMap(),
         @Setting val pot: Int = 0
-)
+) {
+    fun getBoughtTickets(player: Player) = boughtTickets[player.uniqueId] ?: 0
+}
 
 @ConfigSerializable
 data class Broadcasts(

@@ -21,8 +21,8 @@ configurations {
     compile.extendsFrom shade
 }
 
-ext.spongeApiVersion = '4.1.0'
-ext.kotlinVersion = '1.0.2'
+ext.spongeApiVersion = "4.1.0"
+ext.kotlinVersion = "1.0.2"
 
 dependencies {
     shade "org.jetbrains.kotlin:kotlin-runtime:$kotlinVersion"
