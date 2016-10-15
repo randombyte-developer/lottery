@@ -29,8 +29,12 @@ class BuyTicketCommand : PlayerCommandExecutor() {
                     boughtTickets = config.internalData.boughtTickets + (player.uniqueId to finalBoughtTickets),
                     pot = config.internalData.pot + amount * config.ticketCosts))
         } else {
-            throw CommandException(Text.of("Maximum tickets per player reached! " +
-                    "You can only buy ${config.maxTickets - boughtTickets} more ticket(s)!"))
+            val errorTextBuilder = Text.builder("Maximum tickets per player reached!")
+            val ticketsAvailableForBuy = config.maxTickets - boughtTickets
+            if (ticketsAvailableForBuy > 0) {
+                errorTextBuilder.append(Text.of(" You can only buy $ticketsAvailableForBuy more ticket(s)!"))
+            }
+            throw CommandException(errorTextBuilder.build())
         }
 
         val economyService = Lottery.getEconomyServiceOrFail()
