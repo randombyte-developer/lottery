@@ -34,7 +34,7 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
     companion object {
         const val ID = "lottery"
         const val NAME = "Lottery"
-        const val VERSION = "v1.1"
+        const val VERSION = "v1.2"
         const val AUTHOR = "RandomByte"
 
         val PLUGIN_CAUSE = Cause.of(NamedCause.source(this))
@@ -99,7 +99,7 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
     fun onReload(event: GameReloadEvent) {
         val config = ConfigManager.loadConfig()
         resetTasks(config)
-        logger.info("Reloaded! Next draw in ${getDurationUntilDraw().toMinutes()}!")
+        logger.info("Reloaded! Next draw in ${getDurationUntilDraw().toMinutes()} minutes!")
     }
 
     private fun resetTasks(config: Config) {

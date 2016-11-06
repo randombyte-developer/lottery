@@ -16,8 +16,6 @@ class BuyTicketCommand : PlayerCommandExecutor() {
     override fun executedByPlayer(player: Player, args: CommandContext): CommandResult {
         val config = ConfigManager.loadConfig()
 
-
-
         val boughtTickets = config.internalData.getBoughtTickets(player)
         val amount = args.getOne<Int>("ticketAmount").orElse(1)
         if (amount < 1) throw CommandException(Text.of(TextColors.RED, "'ticketAmount' must be positive!"))
