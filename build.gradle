@@ -1,6 +1,7 @@
 plugins {
-    id "com.zoltu.kotlin" version "1.0.4"
+    id "com.zoltu.kotlin" version "1.0.6"
     id "com.qixalite.spongestart" version "1.5.2"
+    id "com.github.johnrengelman.shadow" version "1.2.4"
 }
 
 group "de.randombyte"
@@ -9,7 +10,7 @@ version "v1.2"
 repositories {
     jcenter()
     maven { url "https://repo.spongepowered.org/maven/" }
-    maven { url 'https://jitpack.io' }
+    maven { url "https://jitpack.io" }
 }
 
 spongestart {
@@ -22,20 +23,27 @@ configurations {
 }
 
 ext.spongeApiVersion = "5.0.0"
-ext.kotlinVersion = "1.0.4"
+ext.kotlinVersion = "1.0.6"
 
 dependencies {
-    shade "org.jetbrains.kotlin:kotlin-runtime:$kotlinVersion"
-    shade "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    compile "org.jetbrains.kotlin:kotlin-runtime:$kotlinVersion"
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     compile "org.spongepowered:spongeapi:$spongeApiVersion"
     kapt "org.spongepowered:spongeapi:$spongeApiVersion"
+    compile "com.github.randombyte-developer.kosp:kosp:v0.3.4"
 }
 
-//https://forgegradle.readthedocs.org/en/latest/user-guide/shading/
-jar {
-    configurations.shade.each { dep ->
-        from(project.zipTree(dep)) {
-            exclude 'META-INF', 'META-INF/**'
-        }
+shadowJar {
+    dependencies {
+        include dependency("org.jetbrains.kotlin:kotlin-runtime")
+        include dependency("org.jetbrains.kotlin:kotlin-stdlib")
+        include dependency("com.github.randombyte-developer.kosp:kosp")
     }
+
+    exclude "StartServer*.*"
+
+    relocate "kotlin", "de.randombyte.lottery.internal.kotlin"
+    relocate "de.randombyte.kosp", "de.randombyte.lottery.internal.kosp"
+
+    classifier = null // Remove '-all' suffix from output file name
 }

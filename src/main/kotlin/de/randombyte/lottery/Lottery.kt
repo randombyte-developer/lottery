@@ -1,6 +1,11 @@
 package de.randombyte.lottery
 
 import com.google.inject.Inject
+import de.randombyte.kosp.ServiceUtils
+import de.randombyte.kosp.bstats.BStatsMetrics
+import de.randombyte.kosp.config.ConfigManager
+import de.randombyte.kosp.extensions.gray
+import de.randombyte.kosp.extensions.typeToken
 import de.randombyte.lottery.commands.BuyTicketCommand
 import de.randombyte.lottery.commands.DrawCommand
 import de.randombyte.lottery.commands.InfoCommand
@@ -30,51 +35,34 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 @Plugin(id = Lottery.ID, name = Lottery.NAME, version = Lottery.VERSION, authors = arrayOf(Lottery.AUTHOR))
-class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot = true) val configLoader: ConfigurationLoader<CommentedConfigurationNode>) {
+class Lottery @Inject constructor(
+        val logger: Logger,
+        @DefaultConfig(sharedRoot = true) configLoader: ConfigurationLoader<CommentedConfigurationNode>,
+        val metrics: BStatsMetrics) {
+
     companion object {
         const val ID = "lottery"
         const val NAME = "Lottery"
         const val VERSION = "v1.2"
         const val AUTHOR = "RandomByte"
-
-        val PLUGIN_CAUSE = Cause.of(NamedCause.source(this))
-        // Set on startup in resetTasks()
-        private lateinit var nextDraw: Instant
-
-        fun draw(config: Config) {
-            val ticketBuyers = config.internalData.boughtTickets.map { Collections.nCopies(it.value, it.key) }.flatten()
-            if (ticketBuyers.isEmpty()) {
-                broadcast(Text.of(TextColors.GRAY, "The lottery pot is empty, the draw is postponed!"))
-                return
-            }
-            Collections.shuffle(ticketBuyers) // Here comes the randomness
-            playerWon(config, ticketBuyers.first())
-            resetPot(config)
-        }
-
-        private fun playerWon(config: Config, uuid: UUID) {
-            val playerName = Sponge.getServiceManager().provide(UserStorageService::class.java)
-                    .orElse(null)?.get(uuid)?.orElse(null)?.name ?: "unknown"
-            val pot = getPot(config)
-            broadcast(config.drawMessage.apply(mapOf("player" to playerName, "pot" to pot)).build())
-            val economyService = getEconomyServiceOrFail()
-            economyService.getOrCreateAccount(uuid).get().deposit(economyService.defaultCurrency, BigDecimal(pot), PLUGIN_CAUSE)
-        }
-
-        fun broadcast(text: Text) = Sponge.getServer().broadcastChannel.send(text)
-        private fun resetPot(config: Config) =
-                ConfigManager.saveConfig(config.copy(internalData = config.internalData.copy(pot = 0, boughtTickets = emptyMap())))
-        fun getPot(config: Config) = config.internalData.pot * (config.payoutPercentage / 100.0)
-        fun getDurationUntilDraw() = Duration.between(Instant.now(), Lottery.nextDraw)
-
-        fun getEconomyServiceOrFail(): EconomyService = Sponge.getServiceManager().provide(EconomyService::class.java)
-                .orElseThrow { RuntimeException("No economy plugin loaded!") }
     }
+
+    val configManager = ConfigManager(
+            configLoader = configLoader,
+            clazz = Config::class,
+            hyphenSeparatedKeys = true,
+            formattingTextSerialization = true,
+            simpleTextTemplateSerialization = true,
+            additionalSerializers = {
+                registerType(Duration::class.typeToken, DurationSerializer)
+            })
+
+    val PLUGIN_CAUSE = Cause.of(NamedCause.source(this))
+    // Set on startup in resetTasks()
+    lateinit var nextDraw: Instant
 
     @Listener
     fun onInit(event: GameInitializationEvent) {
-        ConfigManager.configLoader = configLoader
-
         Sponge.getCommandManager().register(this, CommandSpec.builder()
                 .child(CommandSpec.builder()
                         .permission("lottery.ticket.buy")
@@ -90,44 +78,82 @@ class Lottery @Inject constructor(val logger: Logger, @DefaultConfig(sharedRoot 
                         .build(), "info")
                 .build(), "lottery")
 
-        resetTasks(ConfigManager.loadConfig())
+        resetTasks(configManager.get())
 
         logger.info("$NAME loaded: $VERSION")
     }
 
     @Listener
     fun onReload(event: GameReloadEvent) {
-        val config = ConfigManager.loadConfig()
-        resetTasks(config)
+        resetTasks(configManager.get())
         logger.info("Reloaded! Next draw in ${getDurationUntilDraw().toMinutes()} minutes!")
     }
 
-    private fun resetTasks(config: Config) {
+    fun draw(config: Config) {
+        val ticketBuyers = config.internalData.boughtTickets.map { Collections.nCopies(it.value, it.key) }.flatten()
+        if (ticketBuyers.isEmpty()) {
+            broadcast("The lottery pot is empty, the draw is postponed!".gray())
+            return
+        }
+        Collections.shuffle(ticketBuyers) // Here comes the randomness
+        playerWon(config, ticketBuyers.first())
+        resetPot(config)
+    }
+
+    fun playerWon(config: Config, uuid: UUID) {
+        val playerName = ServiceUtils
+                .getServiceOrFail(UserStorageService::class.java, "UserStorageService could not be loaded!")
+                .get(uuid)?.orElse(null)?.name ?: "unknown"
+        val pot = calculatePot(config)
+
+        val defaultCurrency = getDefault()
+        val parameters = mapOf("winnerName" to playerName, "pot" to pot, "currencySymbol" to defaultCurrency.symbol,
+                "currencyName" to defaultCurrency.pluralDisplayName)
+        val message = config.drawMessage.apply(parameters).build()
+        broadcast(message)
+
+        val economyService = getEconomyServiceOrFail()
+        economyService.getOrCreateAccount(uuid).get().deposit(economyService.defaultCurrency, BigDecimal(pot), PLUGIN_CAUSE)
+    }
+
+    fun broadcast(text: Text) = Sponge.getServer().broadcastChannel.send(text)
+    fun resetPot(config: Config) {
+        val newInternalData = config.internalData.copy(pot = 0, boughtTickets = emptyMap())
+        val newConfig = config.copy(internalData = newInternalData)
+        configManager.save(newConfig)
+    }
+
+    fun calculatePot(config: Config) = config.internalData.pot * (config.payoutPercentage / 100.0)
+    fun getDurationUntilDraw() = Duration.between(Instant.now(), nextDraw)
+
+    fun getEconomyServiceOrFail() = ServiceUtils.getServiceOrFail(EconomyService::class.java, "No economy plugin loaded!")
+    fun getDefault() = getEconomyServiceOrFail().defaultCurrency
+
+    fun resetTasks(config: Config) {
         Sponge.getScheduler().getScheduledTasks(this).forEach { it.cancel() }
+
         Task.builder()
                 .async()
                 .interval(config.drawInterval.seconds, TimeUnit.SECONDS)
                 .execute { ->
-                    val currentConfig = ConfigManager.loadConfig()
+                    val currentConfig = configManager.get()
                     draw(currentConfig)
                     nextDraw = Instant.ofEpochSecond(Instant.now().epochSecond + currentConfig.drawInterval.seconds)
-                }
-                .submit(this)
+                }.submit(this)
+
         Task.builder()
                 .async()
                 .interval(config.broadcasts.timedBroadcastInterval.seconds, TimeUnit.SECONDS)
                 .execute { ->
                     broadcast(Text.builder()
                             .append(Text.of(TextColors.GOLD, "Current pot is at "))
-                            .append(Text.of(TextColors.AQUA, getPot(ConfigManager.loadConfig())))
+                            .append(Text.of(TextColors.AQUA, calculatePot(configManager.get())))
                             .append(getEconomyServiceOrFail().defaultCurrency.symbol)
                             .append(Text.of(TextColors.GOLD, "! Use "))
                             .append(Text.builder("/lottery buy [amount] ").color(TextColors.AQUA).
                                     onClick(TextActions.suggestCommand("/lottery buy")).build())
                             .append(Text.of(TextColors.GOLD, "to buy tickets!"))
                             .build())
-                }
-                .submit(this)
-
+                }.submit(this)
     }
 }
