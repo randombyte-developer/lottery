@@ -15,6 +15,7 @@ repositories {
 
 spongestart {
     eula true
+    spongeVanillaBuild = "1.10.2-5.1.0-BETA-366"
 }
 
 configurations {
@@ -30,7 +31,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     compile "org.spongepowered:spongeapi:$spongeApiVersion"
     kapt "org.spongepowered:spongeapi:$spongeApiVersion"
-    compile "com.github.randombyte-developer.kosp:kosp:v0.3.4"
+    compile "com.github.randombyte-developer.kosp:kosp:v0.3.7"
 }
 
 shadowJar {
