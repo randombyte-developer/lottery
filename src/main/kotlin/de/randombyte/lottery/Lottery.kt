@@ -29,6 +29,7 @@ import org.spongepowered.api.event.game.state.GameInitializationEvent
 import org.spongepowered.api.plugin.Plugin
 import org.spongepowered.api.plugin.PluginContainer
 import org.spongepowered.api.scheduler.Task
+import org.spongepowered.api.service.economy.Currency
 import org.spongepowered.api.service.economy.EconomyService
 import org.spongepowered.api.text.Text
 import java.math.BigDecimal
@@ -57,10 +58,10 @@ class Lottery @Inject constructor(
             formattingTextSerialization = true,
             simpleTextTemplateSerialization = true,
             additionalSerializers = {
-                registerType(Duration::class.typeToken, NewDurationSerializer)
+                registerType(Duration::class.typeToken, DurationSerializer)
             })
 
-    val PLUGIN_CAUSE = Cause.of(NamedCause.source(pluginContainer))
+    val PLUGIN_CAUSE: Cause = Cause.of(NamedCause.source(pluginContainer))
     // Set on startup in resetTasks()
     lateinit var nextDraw: Instant
 
@@ -103,8 +104,15 @@ class Lottery @Inject constructor(
             broadcast("The lottery pot is empty, the draw is postponed!".gray())
             return
         }
+
         Collections.shuffle(ticketBuyers) // Here comes the randomness
-        playerWon(config, ticketBuyers.first())
+        val winner = ticketBuyers.first()
+
+        playerWon(config, winner)
+
+        val drawEvent = DrawEvent(winner, config.calculatePot(), PLUGIN_CAUSE)
+        Sponge.getEventManager().post(drawEvent)
+
         resetPot(config)
     }
 
@@ -131,13 +139,15 @@ class Lottery @Inject constructor(
         configManager.save(newConfig)
     }
 
-    fun getDurationUntilDraw() = Duration.between(Instant.now(), nextDraw)
+    fun getDurationUntilDraw(): Duration = Duration.between(Instant.now(), nextDraw)
 
     fun resetTasks(config: Config) {
         Sponge.getScheduler().getScheduledTasks(this).forEach { it.cancel() }
 
+        // Don't make the tasks async because it may happen that the broadcast and draw task are
+        // executed simultaneously. Irritating messages could be produced.
+
         Task.builder()
-                .async()
                 .interval(config.drawInterval.seconds, TimeUnit.SECONDS)
                 .execute { ->
                     val currentConfig = configManager.get()
@@ -146,7 +156,6 @@ class Lottery @Inject constructor(
                 }.submit(this)
 
         Task.builder()
-                .async()
                 .delay(5, TimeUnit.SECONDS) // First start: let economy plugin load
                 .interval(config.broadcasts.timedBroadcastInterval.seconds, TimeUnit.SECONDS)
                 .execute { ->
@@ -163,6 +172,6 @@ class Lottery @Inject constructor(
 }
 
 fun getEconomyServiceOrFail() = ServiceUtils.getServiceOrFail(EconomyService::class, "No economy plugin loaded!")
-fun getDefaultCurrency() = getEconomyServiceOrFail().defaultCurrency
+fun getDefaultCurrency(): Currency = getEconomyServiceOrFail().defaultCurrency
 
 fun broadcast(text: Text) = Sponge.getServer().broadcastChannel.send(text)

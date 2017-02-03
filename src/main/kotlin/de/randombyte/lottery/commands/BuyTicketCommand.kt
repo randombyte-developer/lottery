@@ -13,7 +13,6 @@ import org.spongepowered.api.entity.living.player.Player
 import org.spongepowered.api.event.cause.Cause
 import org.spongepowered.api.service.economy.transaction.ResultType
 import org.spongepowered.api.text.Text
-import org.spongepowered.api.text.format.TextColors
 import java.math.BigDecimal
 
 class BuyTicketCommand(
@@ -51,15 +50,14 @@ class BuyTicketCommand(
 
         configManager.save(newConfig)
 
-        // todo
-        player.sendMessage(Text.builder()
-                .append(Text.of(TextColors.GRAY, "You bought $amount tickets(s) and now have a total amount of "))
-                .append(Text.of(TextColors.AQUA, "$finalBoughtTickets tickets(s)!"))
-                .build()
-        )
+        val buyMessage = config.messages.buyTicketMessage.apply(mapOf(
+                "boughtTickets" to amount,
+                "totalTickets" to finalBoughtTickets)
+        ).build()
+        player.sendMessage(buyMessage)
 
         if (config.broadcasts.broadcastTicketPurchase) {
-            val broadcastText = config.messages.boughtTicketBroadcast.apply(mapOf(
+            val broadcastText = config.messages.buyTicketBroadcast.apply(mapOf(
                     "buyerName" to player.name,
                     "ticketAmount" to amount,
                     "pot" to config.calculatePot()

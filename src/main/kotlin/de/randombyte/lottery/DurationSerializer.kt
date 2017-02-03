@@ -6,9 +6,39 @@ import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer
 import java.time.Duration
 
 object DurationSerializer : TypeSerializer<Duration> {
-    override fun serialize(type: TypeToken<*>, duration: Duration, value: ConfigurationNode) {
-        value.value = duration.toString()
+    private const val MINUTE = 60
+    private const val HOUR= 60 * MINUTE
+    private const val DAY = 24 * HOUR
+
+    // Examples: '1d4h30m20s', '30s', '2h'
+    val REGEX = "(?:(\\d+)d)?(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?".toRegex()
+
+    override fun serialize(type: TypeToken<*>, duration: Duration, node: ConfigurationNode) {
+        val days = duration.seconds / DAY
+        val hours = duration.seconds % DAY / HOUR
+        val minutes = duration.seconds % DAY % HOUR / MINUTE
+        val seconds = duration.seconds % DAY % HOUR % MINUTE
+
+        val sb = StringBuilder()
+        days.apply { if (this != 0L) sb.append(this).append("d") }
+        hours.apply { if (this != 0L) sb.append(this).append("h") }
+        minutes.apply { if (this != 0L) sb.append(this).append("m") }
+        seconds.apply { if (this != 0L) sb.append(this).append("s") }
+
+        node.value = sb.toString()
     }
 
-    override fun deserialize(type: TypeToken<*>, value: ConfigurationNode) = Duration.parse(value.string)
+    override fun deserialize(type: TypeToken<*>, node: ConfigurationNode): Duration {
+        val string = node.string
+        val result = REGEX.matchEntire(string) ?: throw RuntimeException("Couldn't parse duration '$string'!")
+
+        val days = result.groupValues[1].toLongOrZero()
+        val hours = result.groupValues[2].toLongOrZero()
+        val minutes = result.groupValues[3].toLongOrZero()
+        val seconds = result.groupValues[4].toLongOrZero()
+
+        return Duration.ofDays(days).plusHours(hours).plusMinutes(minutes).plusSeconds(seconds)
+    }
+
+    private fun String.toLongOrZero() = if (isEmpty()) 0 else toLong()
 }

@@ -25,33 +25,37 @@ data class Config(
 
 @ConfigSerializable
 class Messages(
-        @Setting(comment = "%currencyName;Is sent to all players when the pot was drawn") val drawMessageBroadcast: TextTemplate = of(
-                "winnerName".toArg().gold(),
-                " won the lottery pot of ".gray(),
-                "pot".toArg().aqua(), "currencySymbol".toArg(), "!"
-        ),
         @Setting(comment = "%currencyName;Is sent when executing the info command") val infoMessage: TextTemplate = of(
                 "You currently have ".gray(),
-                "boughtTickets".toArg().aqua(), " ticket(s) ",
+                "boughtTickets".toArg().aqua(), " ticket(s) ".aqua(),
                 "and there are ".gray(),
                 "pot".toArg().aqua(), "currencySymbol".toArg(), " in the pot. ".gray(),
 
-                "Buy a ticket with ".aqua(),
-                "/lottery buy".aqua().action(TextActions.suggestCommand("/lottery buy")), "! ".aqua(),
+                "Buy a ticket with ".gray(),
+                "/lottery buy".aqua().action(TextActions.suggestCommand("/lottery buy")), "! ".gray(),
 
-                "The next draw is in ".gray(), "minutesUntilDraw".toArg().aqua(), " minutes".aqua(), "."
+                "The next draw is in ".gray(), "minutesUntilDraw".toArg().aqua(), " minutes".aqua(), ".".gray()
         ),
-        @Setting(comment = "%pot;Is sent to all player when a ticket was bought") val boughtTicketBroadcast: TextTemplate = of(
-                "buyerName".toArg().gold(), " has bought ".gold(),
-                "ticketAmount".toArg().gold(), " ticket(s)! ".gold(),
+        @Setting(comment = "%;Is sent when buying (a) ticket(s)") val buyTicketMessage: TextTemplate = of(
+                "You bought ".gray(), "boughtTickets".toArg(), " ticket(s)".gray(), " and now have a total amount of ".gray(),
+                "totalTickets".toArg().aqua(), "ticket(s)".aqua()
+        ),
+        @Setting(comment = "%currencyName;Is broadcasted to all players when the pot was drawn") val drawMessageBroadcast: TextTemplate = of(
+                "winnerName".toArg().aqua(),
+                " won the lottery pot of ".gold(),
+                "pot".toArg().aqua(), "currencySymbol".toArg(), "!".gold()
+        ),
+        @Setting(comment = "%pot;Is broadcasted to all player when a ticket was bought") val buyTicketBroadcast: TextTemplate = of(
+                "buyerName".toArg().aqua(), " has bought ".gray(),
+                "ticketAmount".toArg().aqua(), " ticket(s)! ".aqua(),
 
                 "/lottery info".aqua().action(TextActions.suggestCommand("/lottery info"))
         ),
-        @Setting(comment = "%currencyName;Is sent to all players in the set broadcast interval") val broadcast: TextTemplate = of(
-                "Current pot is at ".gold(), "pot".toArg().aqua(), "currencySymbol".toArg(), "! ",
+        @Setting(comment = "%currencyName;Is broadcasted to all players in the set broadcast interval") val broadcast: TextTemplate = of(
+                "Current pot is at ".gray(), "pot".toArg().aqua(), "currencySymbol".toArg(), "! ".gray(),
 
-                "Use ", "/lottery buy [amount] ".aqua().action(TextActions.suggestCommand("/lottery buy")),
-                "to buy tickets."
+                "Use ".gray(), "/lottery buy [amount]".aqua().action(TextActions.suggestCommand("/lottery buy")),
+                " to buy tickets.".gray()
         )
 )
 
