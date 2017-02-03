@@ -25,7 +25,7 @@ data class Config(
 
 @ConfigSerializable
 class Messages(
-        @Setting(comment = "%currencyName;Is sent when executing the info command") val infoMessage: TextTemplate = of(
+        @Setting(comment = "%currencyName;Is sent when the info command is executed by a player") val infoMessagePlayer: TextTemplate = of(
                 "You currently have ".gray(),
                 "boughtTickets".toArg().aqua(), " ticket(s) ".aqua(),
                 "and there are ".gray(),
@@ -33,6 +33,12 @@ class Messages(
 
                 "Buy a ticket with ".gray(),
                 "/lottery buy".aqua().action(TextActions.suggestCommand("/lottery buy")), "! ".gray(),
+
+                "The next draw is in ".gray(), "minutesUntilDraw".toArg().aqua(), " minutes".aqua(), ".".gray()
+        ),
+        @Setting(comment = "%currencyName;Is sent when the info command is executed by the console") val infoMessageConsole: TextTemplate = of(
+                "There are ".gray(),
+                "pot".toArg().aqua(), "currencySymbol".toArg(), " in the pot. ".gray(),
 
                 "The next draw is in ".gray(), "minutesUntilDraw".toArg().aqua(), " minutes".aqua(), ".".gray()
         ),
