@@ -47,7 +47,7 @@ class Lottery @Inject constructor(
     companion object {
         const val ID = "lottery"
         const val NAME = "Lottery"
-        const val VERSION = "v1.2"
+        const val VERSION = "1.3"
         const val AUTHOR = "RandomByte"
     }
 
@@ -59,7 +59,7 @@ class Lottery @Inject constructor(
             simpleDurationSerialization = true)
 
     val PLUGIN_CAUSE: Cause = Cause.of(NamedCause.source(pluginContainer))
-    // Set on startup in resetTasks()
+    // Set on startup in setDurationUntilDraw()
     lateinit var nextDraw: Instant
 
     @Listener
