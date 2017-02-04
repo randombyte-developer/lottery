@@ -8,7 +8,6 @@ import de.randombyte.kosp.config.ConfigManager
 import de.randombyte.kosp.extensions.getUser
 import de.randombyte.kosp.extensions.gray
 import de.randombyte.kosp.extensions.toText
-import de.randombyte.kosp.extensions.typeToken
 import de.randombyte.lottery.commands.BuyTicketCommand
 import de.randombyte.lottery.commands.InfoCommand
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
@@ -55,11 +54,9 @@ class Lottery @Inject constructor(
     val configManager = ConfigManager(
             configLoader = configLoader,
             clazz = Config::class,
-            formattingTextSerialization = true,
+            simpleTextSerialization = true,
             simpleTextTemplateSerialization = true,
-            additionalSerializers = {
-                registerType(Duration::class.typeToken, DurationSerializer)
-            })
+            simpleDurationSerialization = true)
 
     val PLUGIN_CAUSE: Cause = Cause.of(NamedCause.source(pluginContainer))
     // Set on startup in resetTasks()
@@ -87,7 +84,10 @@ class Lottery @Inject constructor(
                         .build(), "info")
                 .build(), "lottery")
 
-        resetTasks(configManager.get())
+        val config = configManager.get()
+        // Manually set the duration because the draw task in resetTasks() may be executed too late
+        setDurationUntilDraw(config)
+        resetTasks(config)
 
         logger.info("$NAME loaded: $VERSION")
     }
@@ -141,6 +141,10 @@ class Lottery @Inject constructor(
 
     fun getDurationUntilDraw(): Duration = Duration.between(Instant.now(), nextDraw)
 
+    fun setDurationUntilDraw(config : Config) {
+        nextDraw = Instant.ofEpochSecond(Instant.now().epochSecond + config.drawInterval.seconds)
+    }
+
     fun resetTasks(config: Config) {
         Sponge.getScheduler().getScheduledTasks(this).forEach { it.cancel() }
 
@@ -152,7 +156,7 @@ class Lottery @Inject constructor(
                 .execute { ->
                     val currentConfig = configManager.get()
                     draw(currentConfig)
-                    nextDraw = Instant.ofEpochSecond(Instant.now().epochSecond + currentConfig.drawInterval.seconds)
+                    setDurationUntilDraw(currentConfig)
                 }.submit(this)
 
         Task.builder()
@@ -164,7 +168,7 @@ class Lottery @Inject constructor(
                     val broadcastText = currentConfig.messages.broadcast.apply(mapOf(
                             "currencySymbol" to currency.symbol,
                             "currencyName" to currency.name,
-                            "pot" to config.calculatePot()
+                            "pot" to currentConfig.calculatePot()
                     )).build()
                     broadcast(broadcastText)
                 }.submit(this)
