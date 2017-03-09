@@ -2,12 +2,12 @@ package de.randombyte.lottery
 
 import com.google.inject.Inject
 import de.randombyte.kosp.PlayerExecutedCommand
-import de.randombyte.kosp.ServiceUtils
 import de.randombyte.kosp.bstats.BStats
 import de.randombyte.kosp.config.ConfigManager
 import de.randombyte.kosp.extensions.getUser
 import de.randombyte.kosp.extensions.gray
 import de.randombyte.kosp.extensions.toText
+import de.randombyte.kosp.getServiceOrFail
 import de.randombyte.lottery.commands.BuyTicketCommand
 import de.randombyte.lottery.commands.InfoCommand
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
@@ -42,7 +42,7 @@ class Lottery @Inject constructor(
         val logger: Logger,
         @DefaultConfig(sharedRoot = true) configLoader: ConfigurationLoader<CommentedConfigurationNode>,
         val metrics: BStats,
-        pluginContainer : PluginContainer) {
+        pluginContainer: PluginContainer) {
 
     companion object {
         const val ID = "lottery"
@@ -53,7 +53,7 @@ class Lottery @Inject constructor(
 
     val configManager = ConfigManager(
             configLoader = configLoader,
-            clazz = Config::class,
+            clazz = Config::class.java,
             simpleTextSerialization = true,
             simpleTextTemplateSerialization = true,
             simpleDurationSerialization = true)
@@ -175,7 +175,7 @@ class Lottery @Inject constructor(
     }
 }
 
-fun getEconomyServiceOrFail() = ServiceUtils.getServiceOrFail(EconomyService::class, "No economy plugin loaded!")
+fun getEconomyServiceOrFail() = getServiceOrFail(EconomyService::class, "No economy plugin loaded!")
 fun getDefaultCurrency(): Currency = getEconomyServiceOrFail().defaultCurrency
 
 fun broadcast(text: Text) = Sponge.getServer().broadcastChannel.send(text)
