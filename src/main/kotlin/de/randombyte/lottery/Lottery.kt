@@ -82,7 +82,7 @@ class Lottery @Inject constructor(
                 .child(CommandSpec.builder()
                         .executor(InfoCommand(configManager, durationUntilDraw = { getDurationUntilDraw() }))
                         .build(), "info")
-                .build(), "lottery")
+                .build(), "lottery", "lot")
 
         val config = configManager.get()
         // Manually set the duration because the draw task in resetTasks() may be executed too late
