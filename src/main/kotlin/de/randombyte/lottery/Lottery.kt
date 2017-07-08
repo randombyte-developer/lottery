@@ -103,6 +103,7 @@ class Lottery @Inject constructor(
 
     @Listener
     fun onReload(event: GameReloadEvent) {
+        configManager.generate()
         resetTasks(configManager.get())
         logger.info("Reloaded!")
     }

@@ -24,7 +24,8 @@ class InfoCommand(
                     "pot" to config.calculatePot(),
                     "currencySymbol" to currency.symbol,
                     "currencyName" to currency.name,
-                    "minutesUntilDraw" to durationUntilDraw().toMinutes()
+                    "minutesUntilDraw" to durationUntilDraw().toMinutes(),
+                    "ticketCosts" to config.ticketCosts
             )).build()
             src.sendMessage(infoText)
         } else {
@@ -32,7 +33,8 @@ class InfoCommand(
                     "pot" to config.calculatePot(),
                     "currencySymbol" to currency.symbol,
                     "currencyName" to currency.name,
-                    "minutesUntilDraw" to durationUntilDraw().toMinutes()
+                    "minutesUntilDraw" to durationUntilDraw().toMinutes(),
+                    "ticketCosts" to config.ticketCosts
             )).build()
             src.sendMessage(infoText)
         }
