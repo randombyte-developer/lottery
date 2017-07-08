@@ -1,6 +1,7 @@
 package de.randombyte.lottery.commands
 
 import de.randombyte.kosp.config.ConfigManager
+import de.randombyte.kosp.extensions.green
 import de.randombyte.kosp.extensions.red
 import de.randombyte.lottery.Config
 import org.spongepowered.api.text.format.TextColors
@@ -13,7 +14,6 @@ import org.spongepowered.api.command.spec.CommandExecutor
 import org.spongepowered.api.entity.living.player.Player
 import org.spongepowered.api.event.cause.Cause
 import org.spongepowered.api.service.economy.transaction.ResultType
-import org.spongepowered.api.text.Text
 import java.math.BigDecimal
 
 class AddPotCommand(
@@ -22,50 +22,36 @@ class AddPotCommand(
 ) : CommandExecutor {
     override fun execute(src: CommandSource, args: CommandContext): CommandResult {
         val config = configManager.get()
-
         if (src is Player) {
-
             val amount = args.getOne<Int>("addpotAmount").orElse(0)
-            val takeAmount = amount
-            val DisplayAmount = Integer.toString(amount)
-            val addPotText = Text.builder("The following amount has been added to the pot: ").build()
-            val addPotValue = Text.builder(DisplayAmount).color(TextColors.GREEN).build()
+            val maxDeposit = config.maxDeposit
             val addpotConfig = if (amount >= 0) {
-                config.copy(internalData = config.internalData.copy(
-                        pot = config.internalData.pot + amount))
-            } else {
-                val errorTextBuilder = Text.builder("Error: Could not add to the pot").color(TextColors.DARK_RED).build()
-                throw CommandException(errorTextBuilder)
-            }
-
+                if (!src.hasPermission("lottery.admin") && amount <= maxDeposit) {
+                    config.copy(internalData = config.internalData.copy(
+                            pot = config.internalData.pot + amount))
+                }
+                else if (src.hasPermission("lottery.admin")) {
+                    config.copy(internalData = config.internalData.copy(
+                            pot = config.internalData.pot + amount))
+                } else { throw CommandException("You're not allowed to deposit amounts above $maxDeposit".red()) }
+            } else { throw CommandException("Amount has to be a value above 0".red()) }
             val economyService = getEconomyServiceOrFail()
             val transactionResult = economyService.getOrCreateAccount(src.uniqueId).get()
-                    .withdraw(economyService.defaultCurrency, BigDecimal(takeAmount), transactionCause)
+                    .withdraw(economyService.defaultCurrency, BigDecimal(amount), transactionCause)
             if (transactionResult.result != ResultType.SUCCESS) {
                 throw CommandException("You do not have enough money to do that.".red())
             }
-
             configManager.save(addpotConfig)
-            src.sendMessage(addPotText)
-            src.sendMessage(addPotValue)
+            src.sendMessage("$amount has been added to the pot".green())
         } else {
             val amount = args.getOne<Int>("addpotAmount").orElse(0)
-            val DisplayAmount = Integer.toString(amount)
-            val addPotValueConsole = Text.builder(DisplayAmount).color(TextColors.GREEN).build()
-            val addPotTextConsole = Text.builder("The following amount has been added to the pot: ").build()
             val addpotConfigConsole = if (amount >= 0) {
                 config.copy(internalData = config.internalData.copy(
                         pot = config.internalData.pot + amount))
-            } else {
-                val errorTextBuilder = Text.builder("Error: Could not add to the pot").color(TextColors.DARK_RED).build()
-                throw CommandException(errorTextBuilder)
-            }
-
+            } else { throw CommandException("Could not add $amount to the pot".red()) }
             configManager.save(addpotConfigConsole)
-            src.sendMessage(addPotTextConsole)
-            src.sendMessage(addPotValueConsole)
+            src.sendMessage("$amount has been added to the pot".green())
         }
         return CommandResult.success()
     }
-
 }
