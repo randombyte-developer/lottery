@@ -8,6 +8,7 @@ import de.randombyte.kosp.extensions.getUser
 import de.randombyte.kosp.extensions.gray
 import de.randombyte.kosp.extensions.toText
 import de.randombyte.kosp.getServiceOrFail
+import de.randombyte.lottery.commands.AddPotCommand
 import de.randombyte.lottery.commands.BuyTicketCommand
 import de.randombyte.lottery.commands.InfoCommand
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
@@ -70,6 +71,11 @@ class Lottery @Inject constructor(
                         .executor(BuyTicketCommand(configManager, PLUGIN_CAUSE))
                         .arguments(GenericArguments.optional(GenericArguments.integer("ticketAmount".toText())))
                         .build(), "buy")
+                .child(CommandSpec.builder()
+                        .permission("lottery.addpot")
+                        .executor(AddPotCommand(configManager, PLUGIN_CAUSE))
+                        .arguments(GenericArguments.optional(GenericArguments.integer("addpotAmount".toText())))
+                        .build(), "addpot")
                 .child(CommandSpec.builder()
                         .permission("lottery.draw")
                         .executor(object : PlayerExecutedCommand() {
