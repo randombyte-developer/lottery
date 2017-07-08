@@ -8,6 +8,7 @@ import de.randombyte.kosp.extensions.getUser
 import de.randombyte.kosp.extensions.gray
 import de.randombyte.kosp.extensions.toText
 import de.randombyte.kosp.getServiceOrFail
+import de.randombyte.lottery.commands.AddPotCommand
 import de.randombyte.lottery.commands.BuyTicketCommand
 import de.randombyte.lottery.commands.InfoCommand
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
@@ -71,6 +72,11 @@ class Lottery @Inject constructor(
                         .arguments(GenericArguments.optional(GenericArguments.integer("ticketAmount".toText())))
                         .build(), "buy")
                 .child(CommandSpec.builder()
+                        .permission("lottery.addpot")
+                        .executor(AddPotCommand(configManager, PLUGIN_CAUSE))
+                        .arguments(GenericArguments.optional(GenericArguments.integer("addpotAmount".toText())))
+                        .build(), "addpot")
+                .child(CommandSpec.builder()
                         .permission("lottery.draw")
                         .executor(object : PlayerExecutedCommand() {
                             override fun executedByPlayer(player: Player, args: CommandContext): CommandResult {
@@ -101,7 +107,7 @@ class Lottery @Inject constructor(
     fun draw(config: Config) {
         val ticketBuyers = config.internalData.boughtTickets.map { Collections.nCopies(it.value, it.key) }.flatten()
         if (ticketBuyers.isEmpty()) {
-            broadcast("The lottery pot is empty, the draw is postponed!".gray())
+            broadcast("No tickets were bought, the draw is postponed!".gray())
             return
         }
 
