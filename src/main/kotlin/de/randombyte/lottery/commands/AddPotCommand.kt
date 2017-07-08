@@ -36,7 +36,7 @@ class AddPotCommand(
             val transactionResult = economyService.getOrCreateAccount(src.uniqueId).get()
                     .withdraw(economyService.defaultCurrency, BigDecimal(amount), transactionCause)
             if (transactionResult.result != ResultType.SUCCESS) {
-                throw CommandException("You do not have enough money to do that!".toText())
+                throw CommandException(config.messages.notEnoughMoney)
             }
         }
 

@@ -42,11 +42,12 @@ class BuyTicketCommand(
         }
 
         val economyService = getEconomyServiceOrFail()
-        val transactionResult = economyService.getOrCreateAccount(player.uniqueId).get()
-                .withdraw(economyService.defaultCurrency, BigDecimal(ticketCosts), transactionCause)
-        if (transactionResult.result != ResultType.SUCCESS) {
-            throw CommandException("Transaction failed!".red())
-        }
+        val account = economyService.getOrCreateAccount(player.uniqueId).get()
+        val costs = BigDecimal(ticketCosts)
+
+        if (account.getBalance(economyService.defaultCurrency) < costs) throw CommandException(config.messages.notEnoughMoney)
+        val transactionResult = account.withdraw(economyService.defaultCurrency, costs, transactionCause)
+        if (transactionResult.result != ResultType.SUCCESS) throw CommandException("Transaction failed!".red())
 
         configManager.save(newConfig)
 

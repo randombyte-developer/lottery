@@ -5,6 +5,7 @@ import de.randombyte.kosp.fixedTextTemplateOf
 import ninja.leaping.configurate.objectmapping.Setting
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable
 import org.spongepowered.api.entity.living.player.Player
+import org.spongepowered.api.text.Text
 import org.spongepowered.api.text.TextTemplate
 import org.spongepowered.api.text.action.TextActions
 import java.time.Duration
@@ -63,7 +64,8 @@ class Messages(
 
                 "Use ".gray(), "/lottery buy [amount]".aqua().action(TextActions.suggestCommand("/lottery buy")),
                 " to buy tickets.".gray()
-        )
+        ),
+        @Setting val notEnoughMoney: Text = "You do not have enough money to do that!".red()
 )
 
 @ConfigSerializable

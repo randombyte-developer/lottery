@@ -66,6 +66,8 @@ class Lottery @Inject constructor(
 
     @Listener
     fun onInit(event: GameInitializationEvent) {
+        configManager.generate()
+
         Sponge.getCommandManager().register(this, CommandSpec.builder()
                 .child(CommandSpec.builder()
                         .permission("lottery.ticket.buy")
