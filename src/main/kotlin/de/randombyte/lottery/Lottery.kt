@@ -49,8 +49,10 @@ class Lottery @Inject constructor(
     companion object {
         const val ID = "lottery"
         const val NAME = "Lottery"
-        const val VERSION = "1.3.1"
+        const val VERSION = "1.4"
         const val AUTHOR = "RandomByte"
+
+        const val ROOT_PERMISSION = ID
     }
 
     val configManager = ConfigManager(
@@ -70,17 +72,17 @@ class Lottery @Inject constructor(
 
         Sponge.getCommandManager().register(this, CommandSpec.builder()
                 .child(CommandSpec.builder()
-                        .permission("lottery.ticket.buy")
+                        .permission("$ROOT_PERMISSION.ticket.buy")
                         .executor(BuyTicketCommand(configManager, PLUGIN_CAUSE))
                         .arguments(optional(integer("ticketAmount".toText())))
                         .build(), "buy")
                 .child(CommandSpec.builder()
-                        .permission("lottery.addpot")
+                        .permission("$ROOT_PERMISSION.addpot")
                         .executor(AddPotCommand(configManager, PLUGIN_CAUSE))
                         .arguments(integer("amount".toText()))
                         .build(), "addpot")
                 .child(CommandSpec.builder()
-                        .permission("lottery.draw")
+                        .permission("$ROOT_PERMISSION.draw")
                         .executor(object : PlayerExecutedCommand() {
                             override fun executedByPlayer(player: Player, args: CommandContext): CommandResult {
                                 draw(configManager.get())
