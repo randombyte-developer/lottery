@@ -107,7 +107,7 @@ class Lottery @Inject constructor(
     fun draw(config: Config) {
         val ticketBuyers = config.internalData.boughtTickets.map { Collections.nCopies(it.value, it.key) }.flatten()
         if (ticketBuyers.isEmpty()) {
-            broadcast("The lottery pot is empty, the draw is postponed!".gray())
+            broadcast("No tickets were bought, the draw is postponed!".gray())
             return
         }
 
