@@ -17,7 +17,8 @@ import org.slf4j.Logger
 import org.spongepowered.api.Sponge
 import org.spongepowered.api.command.CommandResult
 import org.spongepowered.api.command.args.CommandContext
-import org.spongepowered.api.command.args.GenericArguments
+import org.spongepowered.api.command.args.GenericArguments.integer
+import org.spongepowered.api.command.args.GenericArguments.optional
 import org.spongepowered.api.command.spec.CommandSpec
 import org.spongepowered.api.config.DefaultConfig
 import org.spongepowered.api.entity.living.player.Player
@@ -69,12 +70,12 @@ class Lottery @Inject constructor(
                 .child(CommandSpec.builder()
                         .permission("lottery.ticket.buy")
                         .executor(BuyTicketCommand(configManager, PLUGIN_CAUSE))
-                        .arguments(GenericArguments.optional(GenericArguments.integer("ticketAmount".toText())))
+                        .arguments(optional(integer("ticketAmount".toText())))
                         .build(), "buy")
                 .child(CommandSpec.builder()
                         .permission("lottery.addpot")
                         .executor(AddPotCommand(configManager, PLUGIN_CAUSE))
-                        .arguments(GenericArguments.optional(GenericArguments.integer("addpotAmount".toText())))
+                        .arguments(integer("amount".toText()))
                         .build(), "addpot")
                 .child(CommandSpec.builder()
                         .permission("lottery.draw")

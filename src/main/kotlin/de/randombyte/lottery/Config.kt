@@ -16,7 +16,7 @@ data class Config(
         @Setting val ticketCosts: Int = 100,
         @Setting(comment = "How much of the pot should be given to the winner") val payoutPercentage: Int = 90,
         @Setting(comment = "The max. amount of tickets a player can buy") val maxTickets: Int = 5,
-        @Setting(comment = "Max amount allowed to be added to the pot by a player.") val maxDeposit: Int = 1000,
+        @Setting(comment = "Max. amount allowed to be added to the pot by a player") val maxDeposit: Int = 1000,
         @Setting val messages : Messages = Messages(),
         @Setting(comment = "Don't modify this!") val internalData: InternalData = InternalData(),
         @Setting val broadcasts: Broadcasts = Broadcasts()

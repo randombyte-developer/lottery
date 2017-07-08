@@ -1,53 +1,29 @@
-buildscript {
-    ext.kotlinVersion = "1.1.1-eap-26"
-
-    repositories {
-        maven { url "http://dl.bintray.com/kotlin/kotlin-eap-1.1" }
-    }
-
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-    }
-}
-
 plugins {
-    id "com.qixalite.spongestart" version "1.6.0"
+    id "org.jetbrains.kotlin.jvm" version "1.1.2-5"
+    id "org.jetbrains.kotlin.kapt" version "1.1.2-5"
     id "com.github.johnrengelman.shadow" version "1.2.4"
     id "flavor.pie.promptsign" version "1.0.2"
 }
-
-apply plugin: "kotlin"
-apply plugin: "kotlin-kapt"
 
 group "de.randombyte"
 version "1.3.1"
 
 repositories {
     jcenter()
-    maven { url "http://dl.bintray.com/kotlin/kotlin-eap-1.1" }
     maven { url "https://repo.spongepowered.org/maven/" }
     maven { url "https://jitpack.io" }
 }
 
-spongestart {
-    eula true
-    spongeVanillaVersion "1.10.2-5.1.0-BETA-366"
-}
-
-ext.spongeApiVersion = "5.1.0"
-
 configurations {
     compile.extendsFrom shadow
+    compile.extendsFrom kapt
 }
 
 dependencies {
-    shadow "org.jetbrains.kotlin:kotlin-runtime:$kotlinVersion"
-    shadow "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    compile "org.spongepowered:spongeapi:$spongeApiVersion"
-    kapt "org.spongepowered:spongeapi:$spongeApiVersion"
-    shadow("com.github.randombyte-developer.kosp:kosp:v0.3.11.1") {
-        transitive = false
-    }
+    shadow "org.jetbrains.kotlin:kotlin-stdlib-jre8:1.1.2-5"
+    kapt "org.spongepowered:spongeapi:5.1.0"
+    shadow("com.github.randombyte-developer.kosp:kosp:v0.4.3.2") { transitive = false }
+
 }
 
 jar.enabled = false
@@ -55,12 +31,16 @@ jar.enabled = false
 shadowJar {
     configurations = [project.configurations.shadow]
 
-    exclude "StartServer*.*"
+    relocate "kotlin", "de.randombyte.lottery.shaded.kotlin"
+    relocate "de.randombyte.kosp", "de.randombyte.lottery.shaded.kosp"
 
-    relocate "kotlin", "de.randombyte.lottery.internal.kotlin"
-    relocate "de.randombyte.kosp", "de.randombyte.lottery.internal.kosp"
-
-    classifier = null // Remove '-all' suffix from output file name
+    classifier = null // Removes '-all' suffix from output file name
 }
 build.dependsOn shadowJar
 signArchives.dependsOn shadowJar
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
