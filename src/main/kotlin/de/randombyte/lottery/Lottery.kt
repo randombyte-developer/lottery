@@ -52,7 +52,7 @@ class Lottery @Inject constructor(
         const val NAME = "Lottery"
         const val VERSION = "1.5"
         const val AUTHOR = "RandomByte"
-        const val DESCRIPTION = "Update 7 API Articuno ;)"
+        const val DESCRIPTION = "Lottery plugin. Update 7 API by Articuno ;)"
 
         const val ROOT_PERMISSION = ID
     }
@@ -91,11 +91,11 @@ class Lottery @Inject constructor(
                                 return CommandResult.success()
                             }
                         })
-                        .build(), "drow")
+                        .build(), "draw")
                 .child(CommandSpec.builder()
                         .executor(InfoCommand(configManager, durationUntilDraw = { getDurationUntilDraw() }))
                         .build(), "info")
-                .build(), "lottery","lot")
+                .build(), "lottery", "lot")
 
         val config = configManager.get()
         // Manually set the duration because the draw task in resetTasks() may be executed too late
