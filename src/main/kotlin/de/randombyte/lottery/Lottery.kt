@@ -2,11 +2,9 @@ package de.randombyte.lottery
 
 import com.google.inject.Inject
 import de.randombyte.kosp.PlayerExecutedCommand
-import de.randombyte.kosp.bstats.BStats
 import de.randombyte.kosp.config.ConfigManager
 import de.randombyte.kosp.extensions.getUser
 import de.randombyte.kosp.extensions.gray
-import de.randombyte.kosp.extensions.green
 import de.randombyte.kosp.extensions.toText
 import de.randombyte.kosp.getServiceOrFail
 import de.randombyte.lottery.commands.AddPotCommand
@@ -40,19 +38,17 @@ import java.time.Instant
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-@Plugin(id = Lottery.ID, name = Lottery.NAME, version = Lottery.VERSION, authors = arrayOf(Lottery.AUTHOR), description = Lottery.DESCRIPTION)
+@Plugin(id = Lottery.ID, name = Lottery.NAME, version = Lottery.VERSION, authors = [(Lottery.AUTHOR)])
 class Lottery @Inject constructor(
         val logger: Logger,
         @DefaultConfig(sharedRoot = true) configLoader: ConfigurationLoader<CommentedConfigurationNode>,
-        val metrics: BStats,
         pluginContainer: PluginContainer) {
 
     companion object {
         const val ID = "lottery"
         const val NAME = "Lottery"
-        const val VERSION = "1.5"
+        const val VERSION = "2.0"
         const val AUTHOR = "RandomByte"
-        const val DESCRIPTION = "Lottery plugin. Update 7 API by Articuno ;)"
 
         const val ROOT_PERMISSION = ID
     }
