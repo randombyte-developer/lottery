@@ -6,6 +6,7 @@ import de.randombyte.kosp.bstats.BStats
 import de.randombyte.kosp.config.ConfigManager
 import de.randombyte.kosp.extensions.getUser
 import de.randombyte.kosp.extensions.gray
+import de.randombyte.kosp.extensions.green
 import de.randombyte.kosp.extensions.toText
 import de.randombyte.kosp.getServiceOrFail
 import de.randombyte.lottery.commands.AddPotCommand
@@ -24,7 +25,7 @@ import org.spongepowered.api.config.DefaultConfig
 import org.spongepowered.api.entity.living.player.Player
 import org.spongepowered.api.event.Listener
 import org.spongepowered.api.event.cause.Cause
-import org.spongepowered.api.event.cause.NamedCause
+import org.spongepowered.api.event.cause.EventContext
 import org.spongepowered.api.event.game.GameReloadEvent
 import org.spongepowered.api.event.game.state.GameInitializationEvent
 import org.spongepowered.api.plugin.Plugin
@@ -39,7 +40,7 @@ import java.time.Instant
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-@Plugin(id = Lottery.ID, name = Lottery.NAME, version = Lottery.VERSION, authors = arrayOf(Lottery.AUTHOR))
+@Plugin(id = Lottery.ID, name = Lottery.NAME, version = Lottery.VERSION, authors = arrayOf(Lottery.AUTHOR), description = Lottery.DESCRIPTION)
 class Lottery @Inject constructor(
         val logger: Logger,
         @DefaultConfig(sharedRoot = true) configLoader: ConfigurationLoader<CommentedConfigurationNode>,
@@ -49,8 +50,9 @@ class Lottery @Inject constructor(
     companion object {
         const val ID = "lottery"
         const val NAME = "Lottery"
-        const val VERSION = "1.4"
+        const val VERSION = "1.5"
         const val AUTHOR = "RandomByte"
+        const val DESCRIPTION = "Lottery plugin. Update 7 API by Articuno ;)"
 
         const val ROOT_PERMISSION = ID
     }
@@ -62,7 +64,7 @@ class Lottery @Inject constructor(
             simpleTextTemplateSerialization = true,
             simpleDurationSerialization = true)
 
-    val PLUGIN_CAUSE: Cause = Cause.of(NamedCause.source(pluginContainer))
+    val PLUGIN_CAUSE: Cause = Cause.builder().append(pluginContainer).build(EventContext.empty())
     // Set on startup in setDurationUntilDraw()
     lateinit var nextDraw: Instant
 
@@ -107,7 +109,7 @@ class Lottery @Inject constructor(
     fun onReload(event: GameReloadEvent) {
         configManager.generate()
         resetTasks(configManager.get())
-        logger.info("Reloaded!")
+        logger.info("Lottery reloaded!")
     }
 
     fun draw(config: Config) {
