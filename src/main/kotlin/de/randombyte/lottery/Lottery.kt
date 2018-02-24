@@ -12,6 +12,7 @@ import de.randombyte.lottery.commands.BuyTicketCommand
 import de.randombyte.lottery.commands.InfoCommand
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
 import ninja.leaping.configurate.loader.ConfigurationLoader
+import org.bstats.sponge.Metrics
 import org.slf4j.Logger
 import org.spongepowered.api.Sponge
 import org.spongepowered.api.command.CommandResult
@@ -42,12 +43,14 @@ import java.util.concurrent.TimeUnit
 class Lottery @Inject constructor(
         val logger: Logger,
         @DefaultConfig(sharedRoot = true) configLoader: ConfigurationLoader<CommentedConfigurationNode>,
-        pluginContainer: PluginContainer) {
+        pluginContainer: PluginContainer,
+        private val bstats: Metrics
+) {
 
     companion object {
         const val ID = "lottery"
         const val NAME = "Lottery"
-        const val VERSION = "2.0"
+        const val VERSION = "2.0.1"
         const val AUTHOR = "RandomByte"
 
         const val ROOT_PERMISSION = ID

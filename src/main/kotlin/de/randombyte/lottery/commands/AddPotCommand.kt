@@ -26,7 +26,7 @@ class AddPotCommand(
         val maxDeposit = config.maxDeposit
 
         if (amount < 1) throw CommandException("'amount' has to be a value above zero!".toText())
-        if (amount > maxDeposit || !src.hasPermission("lottery.admin")) {
+        if (amount > maxDeposit) {
             throw CommandException("You're not allowed to deposit amounts above $maxDeposit!".toText())
         }
 
