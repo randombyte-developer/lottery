@@ -50,7 +50,7 @@ class Lottery @Inject constructor(
     companion object {
         const val ID = "lottery"
         const val NAME = "Lottery"
-        const val VERSION = "2.0.1"
+        const val VERSION = "2.0.2"
         const val AUTHOR = "RandomByte"
 
         const val ROOT_PERMISSION = ID

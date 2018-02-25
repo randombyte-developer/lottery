@@ -6,7 +6,7 @@ plugins {
 }
 
 group "de.randombyte"
-version "2.0.1"
+version "2.0.2"
 
 repositories {
     jcenter()
@@ -35,6 +35,7 @@ shadowJar {
 
     relocate "kotlin", "de.randombyte.lottery.shaded.kotlin"
     relocate "de.randombyte.kosp", "de.randombyte.lottery.shaded.kosp"
+    relocate "org.bstats", "de.randombyte.lottery.shaded.bstats"
 
     classifier = null // Removes '-all' suffix from output file name
 }
